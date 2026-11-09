@@ -1,1 +1,0 @@
-document.querySelectorAll('[data-form]').forEach(form=>form.addEventListener('submit',event=>{event.preventDefault();const button=form.querySelector('button');button.textContent='Заявка принята';button.disabled=true;form.querySelector('[data-status]').textContent='В предпросмотре отправка не подключена: данные формы не передаются третьим лицам.'}));
