@@ -1,5 +1,16 @@
 (function(){
 'use strict';
+const z7Logo='assets/z7-symbol-master-preview.svg';
+const z7Style=document.createElement('style');
+z7Style.textContent=`
+.brand-mark{padding:0!important;overflow:hidden;background:#f7f8fc!important}.brand-mark img{width:100%;height:100%;object-fit:cover;display:block}.brand-name{font-size:14px!important}.brand-name strong{font-size:15px;letter-spacing:-.06em}.footer .brand-mark{background:#f7f8fc!important}.z7-hero-logo{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;align-items:center}.z7-hero-logo img{display:block;width:min(100%,400px);margin:0 auto;border-radius:18px}.z7-hero-points{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.z7-hero-points span{border-top:1px solid #ffffff38;padding-top:10px;font-size:10px;line-height:1.35;letter-spacing:.07em;color:#c4cdca;text-transform:uppercase}.z7-hero-points b{color:#d5fb54;display:block;font-size:11px;margin-bottom:3px}@media(min-width:901px){.hero{padding-block:64px!important}.hero-home{grid-template-columns:minmax(0,1.12fr) minmax(330px,.88fr)!important}.visual-board{min-height:440px!important}.section{padding-block:92px!important}.section-tight{padding-block:72px!important}}`;
+document.head.appendChild(z7Style);
+document.title=document.title.replaceAll('27 Technologies','Z7 Technologies');
+document.querySelectorAll('meta[property="og:title"],meta[name="description"],meta[property="og:description"]').forEach(meta=>{meta.content=meta.content.replaceAll('27 Technologies','Z7 Technologies')});
+document.querySelectorAll('.brand').forEach(brand=>{brand.setAttribute('aria-label','Z7 Technologies — главная');const mark=brand.querySelector('.brand-mark');const name=brand.querySelector('.brand-name');if(mark)mark.innerHTML=`<img src="${z7Logo}" alt="Z7">`;if(name)name.innerHTML='<strong>Z7 TECHNOLOGIES</strong><small>SOFTWARE DEVELOPMENT</small>'});
+document.querySelectorAll('.footer-bottom span').forEach(item=>{item.textContent=item.textContent.replaceAll('27 Technologies','Z7 Technologies')});
+const homeHero=document.querySelector('.hero-home');
+if(homeHero){const eyebrow=homeHero.querySelector('.eyebrow');const note=homeHero.querySelector('.hero-note');const visual=homeHero.querySelector('.visual-graphic');const date=homeHero.querySelector('.visual-header span:last-child');if(eyebrow)eyebrow.textContent='Z7 TECHNOLOGIES / SOFTWARE ENGINEERING';if(note)note.textContent='Z7 Technologies · юридическое лицо ООО «СКС»';if(date)date.textContent='Z7 / 2026';if(visual)visual.innerHTML=`<div class="z7-hero-logo"><img src="${z7Logo}" alt="Знак Z7 Technologies"><div class="z7-hero-points"><span><b>01</b>Понимаем задачу</span><span><b>02</b>Собираем решение</span><span><b>03</b>Запускаем систему</span></div></div>`}
 const menu=document.querySelector('.menu-toggle');const nav=document.querySelector('#main-nav');
 if(menu&&nav){menu.addEventListener('click',()=>{const expanded=menu.getAttribute('aria-expanded')==='true';menu.setAttribute('aria-expanded',String(!expanded));nav.classList.toggle('is-open',!expanded)});nav.addEventListener('click',e=>{if(e.target.closest('a')){nav.classList.remove('is-open');menu.setAttribute('aria-expanded','false')}})}
 function goal(name){if(window.METRIKA_ID&&typeof window.ym==='function'){try{window.ym(window.METRIKA_ID,'reachGoal',name)}catch(e){}}}
