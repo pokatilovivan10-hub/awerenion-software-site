@@ -1,13 +1,80 @@
-(function(){
-'use strict';
-const homeHero=document.querySelector('.hero-home');
-if(homeHero){const eyebrow=homeHero.querySelector('.eyebrow');const note=homeHero.querySelector('.hero-note');const visual=homeHero.querySelector('.visual-graphic');const date=homeHero.querySelector('.visual-header span:last-child');if(eyebrow)eyebrow.textContent='Z7 TECHNOLOGIES / SOFTWARE ENGINEERING';if(note)note.textContent='Z7 Technologies · юридическое лицо ООО «СКС»';if(date)date.textContent='Z7 / 2026';if(visual)visual.innerHTML=`<svg class="z7-system-map" viewBox="0 0 500 400" role="img" aria-label="Схема проектирования цифрового продукта"><path class="wire" d="M250 95V144M250 256V304M120 200H64V344H146M380 200H436V344H354"/><circle class="node" cx="250" cy="95" r="5"/><circle class="node" cx="250" cy="144" r="5"/><circle class="node" cx="250" cy="256" r="5"/><circle class="node" cx="250" cy="304" r="5"/><rect class="box" x="94" y="28" width="312" height="68" rx="3"/><text class="muted" x="116" y="53">INTERFACE / USER FLOW</text><text class="label" x="116" y="78">Сценарии и интерфейсы</text><rect class="box-core" x="94" y="145" width="312" height="112" rx="3"/><text class="muted" x="116" y="173" fill="#d5fb54">SYSTEM CORE</text><rect x="116" y="190" width="72" height="40" fill="#3a4a4b" stroke="#92a39f"/><rect x="214" y="190" width="72" height="40" fill="#3a4a4b" stroke="#92a39f"/><rect x="312" y="190" width="72" height="40" fill="#3a4a4b" stroke="#92a39f"/><text class="sub" x="152" y="214" text-anchor="middle">API</text><text class="sub" x="250" y="214" text-anchor="middle">LOGIC</text><text class="sub" x="348" y="214" text-anchor="middle">AUTH</text><path class="line" d="M188 210H214M286 210H312"/><rect class="box" x="104" y="305" width="292" height="68" rx="3"/><text class="muted" x="126" y="330">DATA & INTEGRATIONS</text><text class="label" x="126" y="355">Данные, сервисы, процессы</text></svg>`}
-const menu=document.querySelector('.menu-toggle');const nav=document.querySelector('#main-nav');
-if(menu&&nav){menu.addEventListener('click',()=>{const expanded=menu.getAttribute('aria-expanded')==='true';menu.setAttribute('aria-expanded',String(!expanded));nav.classList.toggle('is-open',!expanded)});nav.addEventListener('click',e=>{if(e.target.closest('a')){nav.classList.remove('is-open');menu.setAttribute('aria-expanded','false')}})}
-function goal(name){if(window.METRIKA_ID&&typeof window.ym==='function'){try{window.ym(window.METRIKA_ID,'reachGoal',name)}catch(e){}}}
-document.querySelectorAll('a[href^="tel:"]').forEach(a=>a.addEventListener('click',()=>goal('click_phone')));
-document.querySelectorAll('a[href^="mailto:"]').forEach(a=>a.addEventListener('click',()=>goal('click_email')));
-document.querySelectorAll('a[data-messenger]').forEach(a=>a.addEventListener('click',()=>goal('click_messenger')));
-function validContact(s){s=s.trim();if(!s)return false;if(s.includes('@'))return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);return s.replace(/\D/g,'').length>=10}
-document.querySelectorAll('form[data-contact-form]').forEach(form=>{const status=form.querySelector('[role="status"]');const btn=form.querySelector('button[type="submit"]');const contact=form.querySelector('input[name="contact"]');contact.addEventListener('input',()=>contact.setAttribute('aria-invalid','false'));form.addEventListener('submit',async e=>{e.preventDefault();status.textContent='';if(!form.reportValidity())return;if(!validContact(contact.value)){contact.setAttribute('aria-invalid','true');status.textContent='Укажите корректный телефон или e-mail.';contact.focus();return}if(form.querySelector('input[name="bot-field"]').value)return;const payload=new URLSearchParams(new FormData(form));if(location.protocol==='file:'){status.textContent='Это локальный макет. Отправка заявок заработает после подключения формы на хостинге.';return}btn.disabled=true;const old=btn.innerHTML;btn.textContent='Отправляем…';try{const response=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:payload.toString()});if(!response.ok)throw Error('server');status.textContent='Заявка отправлена. Спасибо!';form.reset();goal('submit_form')}catch(err){status.textContent='Не удалось отправить заявку. Напишите на mail@z7technologies.com или позвоните по указанному номеру.'}finally{btn.disabled=false;btn.innerHTML=old}})});
+(function () {
+  'use strict';
+
+  const heroNote = document.querySelector('.hero-home .hero-note');
+  if (heroNote) heroNote.textContent = 'От задачи → к системе → к измеримому результату.';
+  document.querySelectorAll('.smallprint').forEach((note) => note.remove());
+
+  const menu = document.querySelector('.menu-toggle');
+  const navigation = document.querySelector('#main-nav');
+  if (menu && navigation) {
+    menu.addEventListener('click', () => {
+      const expanded = menu.getAttribute('aria-expanded') === 'true';
+      menu.setAttribute('aria-expanded', String(!expanded));
+      navigation.classList.toggle('is-open', !expanded);
+    });
+    navigation.addEventListener('click', (event) => {
+      if (!event.target.closest('a')) return;
+      navigation.classList.remove('is-open');
+      menu.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function goal(name) {
+    if (!window.METRIKA_ID || typeof window.ym !== 'function') return;
+    try { window.ym(window.METRIKA_ID, 'reachGoal', name); } catch (_) {}
+  }
+
+  document.querySelectorAll('a[href^="tel:"]').forEach((link) => link.addEventListener('click', () => goal('click_phone')));
+  document.querySelectorAll('a[href^="mailto:"]').forEach((link) => link.addEventListener('click', () => goal('click_email')));
+  document.querySelectorAll('a[data-messenger]').forEach((link) => link.addEventListener('click', () => goal('click_messenger')));
+
+  function validContact(value) {
+    const contact = value.trim();
+    if (!contact) return false;
+    if (contact.includes('@')) return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contact);
+    return contact.replace(/\D/g, '').length >= 10;
+  }
+
+  document.querySelectorAll('form[data-contact-form]').forEach((form) => {
+    const status = form.querySelector('[role="status"]');
+    const button = form.querySelector('button[type="submit"]');
+    const contact = form.querySelector('input[name="contact"]');
+    contact.addEventListener('input', () => contact.setAttribute('aria-invalid', 'false'));
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      status.textContent = '';
+      if (!form.reportValidity()) return;
+      if (!validContact(contact.value)) {
+        contact.setAttribute('aria-invalid', 'true');
+        status.textContent = 'Укажите корректный телефон или e-mail.';
+        contact.focus();
+        return;
+      }
+      if (form.querySelector('input[name="bot-field"]').value) return;
+      if (location.protocol === 'file:') {
+        status.textContent = 'Это локальный макет. Отправка заявок заработает после подключения формы на хостинге.';
+        return;
+      }
+      button.disabled = true;
+      const initialButtonMarkup = button.innerHTML;
+      button.textContent = 'Отправляем…';
+      try {
+        const response = await fetch('/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(new FormData(form)).toString(),
+        });
+        if (!response.ok) throw new Error('server');
+        status.textContent = 'Заявка отправлена. Спасибо!';
+        form.reset();
+        goal('submit_form');
+      } catch (_) {
+        status.textContent = 'Не удалось отправить заявку. Напишите на mail@z7technologies.com или позвоните по указанному номеру.';
+      } finally {
+        button.disabled = false;
+        button.innerHTML = initialButtonMarkup;
+      }
+    });
+  });
 })();
