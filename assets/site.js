@@ -1,6 +1,26 @@
 (function () {
   'use strict';
 
+  const configUrl = new URL('form-config.json', document.currentScript.src).href;
+  let formEndpointPromise;
+
+  function getFormEndpoint() {
+    if (!formEndpointPromise) {
+      formEndpointPromise = fetch(configUrl, { cache: 'no-store' })
+        .then((response) => {
+          if (!response.ok) throw new Error('config');
+          return response.json();
+        })
+        .then((config) => {
+          if (!config || typeof config.endpoint !== 'string' || !config.endpoint.startsWith('https://')) {
+            throw new Error('endpoint');
+          }
+          return config.endpoint;
+        });
+    }
+    return formEndpointPromise;
+  }
+
   const heroNote = document.querySelector('.hero-home .hero-note');
   if (heroNote) heroNote.textContent = 'От задачи → к системе → к измеримому результату.';
   document.querySelectorAll('.smallprint').forEach((note) => note.remove());
@@ -40,6 +60,7 @@
     const status = form.querySelector('[role="status"]');
     const button = form.querySelector('button[type="submit"]');
     const contact = form.querySelector('input[name="contact"]');
+    const message = form.querySelector('textarea[name="message"]');
     contact.addEventListener('input', () => contact.setAttribute('aria-invalid', 'false'));
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -52,6 +73,11 @@
         return;
       }
       if (form.querySelector('input[name="bot-field"]').value) return;
+      if (message.value.length > 3000) {
+        status.textContent = 'Описание задачи не должно быть длиннее 3000 символов.';
+        message.focus();
+        return;
+      }
       if (location.protocol === 'file:') {
         status.textContent = 'Это локальный макет. Отправка заявок заработает после подключения формы на хостинге.';
         return;
@@ -60,12 +86,14 @@
       const initialButtonMarkup = button.innerHTML;
       button.textContent = 'Отправляем…';
       try {
-        const response = await fetch('/', {
+        const endpoint = await getFormEndpoint();
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams(new FormData(form)).toString(),
         });
-        if (!response.ok) throw new Error('server');
+        const result = await response.json().catch(() => null);
+        if (!response.ok || !result || result.ok !== true) throw new Error('server');
         status.textContent = 'Заявка отправлена. Спасибо!';
         form.reset();
         goal('submit_form');

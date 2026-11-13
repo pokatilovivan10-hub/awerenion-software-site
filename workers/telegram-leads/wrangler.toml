@@ -1,0 +1,10 @@
+name = "awerenion-telegram-leads"
+main = "src/index.js"
+compatibility_date = "2025-04-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://pokatilovivan10-hub.github.io"
+
+# Configure only in Cloudflare Secrets:
+# TELEGRAM_BOT_TOKEN
+# TELEGRAM_CHAT_ID
