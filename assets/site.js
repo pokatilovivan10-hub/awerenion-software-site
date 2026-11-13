@@ -17,6 +17,9 @@
           }
           return config.endpoint;
         });
+      formEndpointPromise.catch(() => {
+        formEndpointPromise = undefined;
+      });
     }
     return formEndpointPromise;
   }

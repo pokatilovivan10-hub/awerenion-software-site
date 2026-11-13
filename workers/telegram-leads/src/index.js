@@ -1,4 +1,4 @@
-const MAX_BODY_SIZE = 8_192;
+const MAX_BODY_BYTES = 40 * 1024;
 const MAX_MESSAGE_LENGTH = 3_000;
 
 function json(body, status, headers = {}) {
@@ -39,6 +39,37 @@ function telegramText({ name, contact, message, origin }) {
   ].join('\n');
 }
 
+async function readBody(request) {
+  const declaredLength = Number(request.headers.get('content-length'));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES) {
+    throw new RangeError('payload_too_large');
+  }
+
+  const reader = request.body?.getReader();
+  if (!reader) return '';
+
+  const chunks = [];
+  let length = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    length += value.byteLength;
+    if (length > MAX_BODY_BYTES) {
+      await reader.cancel();
+      throw new RangeError('payload_too_large');
+    }
+    chunks.push(value);
+  }
+
+  const bytes = new Uint8Array(length);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -54,8 +85,13 @@ export default {
       return json({ ok: false, error: 'unsupported_content_type' }, 415, cors);
     }
 
-    const body = await request.text();
-    if (body.length > MAX_BODY_SIZE) return json({ ok: false, error: 'payload_too_large' }, 413, cors);
+    let body;
+    try {
+      body = await readBody(request);
+    } catch (error) {
+      if (error instanceof RangeError) return json({ ok: false, error: 'payload_too_large' }, 413, cors);
+      return json({ ok: false, error: 'invalid_request' }, 400, cors);
+    }
 
     const params = new URLSearchParams(body);
     if (value(params, 'bot-field', 1)) return json({ ok: true }, 200, cors);
@@ -63,10 +99,11 @@ export default {
       return json({ ok: false, error: 'consent_required' }, 400, cors);
     }
 
+    const rawMessage = params.get('message') || '';
     const name = value(params, 'name', 100);
     const contact = value(params, 'contact', 130);
     const message = value(params, 'message', MAX_MESSAGE_LENGTH);
-    if (!name || !contact || !message || params.get('message').trim().length > MAX_MESSAGE_LENGTH) {
+    if (!name || !contact || !message || rawMessage.trim().length > MAX_MESSAGE_LENGTH) {
       return json({ ok: false, error: 'invalid_form' }, 400, cors);
     }
     if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
